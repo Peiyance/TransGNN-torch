@@ -46,6 +46,16 @@ class TransGNN(nn.Module):
         embeds = [torch.concat([self.user_embeding, self.item_embeding], dim=0)]     
         for i in range(args.block_num):
             tmp_embeds = self.gnn_message_passing(adj, embeds[-1])
+            tmp_user_embeds = tmp_embeds[:args.user]
+            tmp_item_embeds = tmp_embeds[args.user:]
+            tmp_user_embeds = self.user_transformer_layer(tmp_user_embeds)
+            tmp_item_embeds = self.item_transformer_layer(tmp_item_embeds)
+            
+            tmp_user_embeds += tmp_embeds[:args.user]
+            tmp_item_embeds += tmp_embeds[args.user:]
+        
+            tmp_embeds = torch.concat([tmp_user_embeds, tmp_item_embeds], dim=0)
+            
             embeds.append(tmp_embeds)
 
         embeds = sum(embeds)
